@@ -1,13 +1,1039 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <title>VR Mall Navigator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    />
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        rel="stylesheet"
+    />
+    <style>
+        :root {
+            --primary: #6c63ff;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
+            --background: #1a1e23;
+            --card-bg: #2a2e36;
+            --text: #ffffff;
+            --light-text: #a0a0a0;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: rgba(42, 46, 53, 0.8);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            overflow: hidden;
+            width: 350px;
+            background-color: var(--card-bg);
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        #map-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .select-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .select-wrapper::after {
+            content: "\f107";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--light-text);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: rgba(24, 122, 234, 0.771);
+            color: var(--white);
+            font-size: 14px;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .button-container {
+            gap: 4px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 14px 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary);
+            color: var(--white);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        #reset-button {
+            background-color: var(--accent);
+        }
+
+        .compass {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .compass:hover {
+            transform: scale(1.1);
+        }
+
+        .compass img {
+            width: 50px;
+            height: 50px;
+            transition: transform 0.3s ease;
+        }
+
+        #weather-info {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+
+        .weather-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        #popup h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        #popup button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            border: none;
+            color: var(--white);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        #popup button:hover {
+            background-color: #5a52cc;
+        }
+
+        @keyframes sunny {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        @keyframes cloudy {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+        @keyframes rainy {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+            100% { transform: translateY(0); }
+        }
+
+        .sunny { animation: sunny 2s infinite; }
+        .cloudy { animation: cloudy 4s infinite; }
+        .rainy { animation: rainy 1s infinite; }
+
+        #add-marker-button {
+            background-color: var(--secondary);
+            margin-top: 10px;
+        }
+
+        #marker-name-input {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid var(--primary);
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--text);
+        }
+        .view-offers-button,
+        .view-events-button {
+            background-color: var(--secondary);
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .offers-overlay,
+        .events-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .offers-container,
+        .events-container {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-offers,
+        .close-events {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .offers-list,
+        .events-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .offer-item,
+        .event-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .offer-item:hover,
+        .event-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .offer-item h3,
+        .event-item h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .refresh-offers,
+        .refresh-events {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .refresh-offers:hover,
+        .refresh-events:hover {
+            background-color: var(--secondary);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .event-date,
+        .event-location {
+            font-size: 14px;
+            color: var(--light-text);
+            margin-bottom: 5px;
+        }
+
+        .event-description {
+            font-size: 14px;
+            color: var(--text);
+            margin-top: 10px;
+        }
+
+        .offer-code {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .copy-code {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .copy-code:hover {
+            background-color: var(--accent);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* QR Code styles */
+        #qr-code {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            background: #fff;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #qr-code.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        #path-steps {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        #path-steps p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-map-marked-alt"></i>
+            VR Mall Navigator
+        </div>
+        <div id="weather-info">
+            <img src="" alt="Weather" class="weather-icon">
+            <span></span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title">Location</div>
+                <div class="select-wrapper">
+                    <select id="current-location">
+                        <option value="" data-coords="">Select Current Location</option>
+                        <option value="platform-1" data-coords="56.30, -2.18, 1.51">HNM</option>
+                        <option value="platform-2" data-coords="-28.63, -2.18, 6.06">Lifestyle</option>
+                        <option value="platform-2" data-coords="14.85, -2.18, 4.60">Nykka</option>
+                        <option value="platform-3" data-coords="53.38, -2.18, -6.13">Marks & Spencer</option>
+                        <option value="platform-3" data-coords="28.25, -2.18, -9.1318">Tommy Hilfiger</option>
+                        <option value="platform-3" data-coords="17.11, -2.18, -6.24">Ethos</option>
+                        <option value="platform-3" data-coords="9.78, -2.18, -3.98">Zodiac</option>
+                        <option value="platform-3" data-coords="0.89, -2.18, -2.29">Calvin Klein</option>
+                        <option value="platform-3" data-coords="-8.48, -2.18, -3.26">Being Human</option>
+                        <option value="platform-3" data-coords="-30.57, -3.06, 10.30">Vero Moda</option>
+                        <option value="platform-3" data-coords="-25.78, -3.05, 12.55">Only</option>
+                        <option value="platform-3" data-coords="-18.26, -2.18, 11.60">Orra</option>
+                        <option value="platform-3" data-coords="-13.15, -2.18, 10.90">Forever New</option>
+                        <option value="platform-3" data-coords="-7.16, -2.18, 8.78">Casio</option>
+                        <option value="platform-3" data-coords="19.38, -2.18, 5.43">Inspire</option>
+                        <option value="platform-3" data-coords="26.48, -2.18, 5.17">Louis Philippe</option>
+                        <option value="platform-3" data-coords="6.81, -2.18, 16.94">Lift</option>
+                        <option value="platform-3" data-coords="-67.22, 0.04, 20.24">Parking Lift</option>
+                        <option value="platform-3" data-coords="8.30, 0.04, -12.49">R-Trends</option>
+                        <option value="platform-3" data-coords="21.40, 0.04, 8.12">R-Digital</option>
+                        <option value="platform-3" data-coords="38.67, 0.04, 10.27">R-Smart</option>
+                        <option value="platform-3" data-coords="-10.22, 0.10, 19.99">LG Escalator</option>
+                    </select>
+                </div>
+                <div class="select-wrapper">
+                    <select id="destination">
+                        <option value="" data-coords="">Select Destination</option>
+                        <option value="platform-1" data-coords="56.30, -2.18, 1.51">HNM</option>
+                        <option value="platform-2" data-coords="-28.63, -2.18, 6.06">Lifestyle</option>
+                        <option value="platform-2" data-coords="14.85, -2.18, 4.60">Nykka</option>
+                        <option value="platform-3" data-coords="53.38, -2.18, -6.13">Marks & Spencer</option>
+                        <option value="platform-3" data-coords="28.25, -2.18, -9.1318">Tommy Hilfiger</option>
+                        <option value="platform-3" data-coords="17.11, -2.18, -6.24">Ethos</option>
+                        <option value="platform-3" data-coords="9.78, -2.18, -3.98">Zodiac</option>
+                        <option value="platform-3" data-coords="0.89, -2.18, -2.29">Calvin Klein</option>
+                        <option value="platform-3" data-coords="-8.48, -2.18, -3.26">Being Human</option>
+                        <option value="platform-3" data-coords="-30.57, -3.06, 10.30">Vero Moda</option>
+                        <option value="platform-3" data-coords="-25.78, -3.05, 12.55">Only</option>
+                        <option value="platform-3" data-coords="-18.26, -2.18, 11.60">Orra</option>
+                        <option value="platform-3" data-coords="-13.15, -2.18, 10.90">Forever New</option>
+                        <option value="platform-3" data-coords="-7.16, -2.18, 8.78">Casio</option>
+                        <option value="platform-3" data-coords="19.38, -2.18, 5.43">Inspire</option>
+                        <option value="platform-3" data-coords="26.48, -2.18, 5.17">Louis Philippe</option>
+                        <option value="platform-3" data-coords="6.81, -2.18, 16.94">Lift</option>
+                        <option value="platform-3" data-coords="-67.22, 0.04, 20.24">Parking Lift</option>
+                        <option value="platform-3" data-coords="8.30, 0.04, -12.49">R-Trends</option>
+                        <option value="platform-3" data-coords="21.40, 0.04, 8.12">R-Digital</option>
+                        <option value="platform-3" data-coords="38.67, 0.04, 10.27">R-Smart</option>
+                        <option value="platform-3" data-coords="-10.22, 0.10, 19.99">LG Escalator</option>
+                    </select>
+                </div>
+                <div class="select-wrapper">
+                    <select id="level-select">
+                        <option value="1">Upper Ground</option>
+                        <option value="2">Lower Ground</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Navigation</div>
+                <div class="button-container">
+                    <button id="start-button"><i class="fas fa-play"></i> Start</button>
+                    <button id="reset-button"><i class="fas fa-undo"></i> Reset</button>
+                    <button id="toggle-voice-nav"><i class="fas fa-microphone"></i> Voice</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Custom Marker</div>
+                <button id="add-marker-button"><i class="fas fa-map-marker-alt"></i> Add Marker</button>
+                <input type="text" id="marker-name-input" placeholder="Enter marker name" />
+            </div>
+            <div class="card">
+                <div class="card-title">QR Code</div>
+                <div id="qr-code"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Offers and Events</div>
+                <button id="view-offers-button" class="view-offers-button">View Current Offers</button>
+                <button id="view-events-button" class="view-events-button">View Upcoming Events</button>
+            </div>
+            <div class="card">
+                <div class="card-title">Navigation Steps</div>
+                <div id="path-steps"></div>
+            </div>
+
+            <div>
+                <div id="estimated-time"></div>
+                <div id="current-time"></div>
+            </div>
+            
+        </div>
+
+        <div id="map-container">
+            <!-- 3D map content goes here -->
+            <div class="compass">
+                <img src="https://api.iconify.design/mdi:compass.svg" alt="Compass" />
+            </div>
+        </div>
+    </div>
+
+    <div id="popup">
+        <h3>Destination Reached</h3>
+        <p>You have arrived at your destination.</p>
+        <button id="close-popup">Close</button>
+    </div>
+
+    <div id="offers-overlay" class="offers-overlay">
+        <div class="offers-container">
+            <h2>Current Offers</h2>
+            <button id="close-offers" class="close-offers">×</button>
+            <div id="offers-list" class="offers-list">
+                <!-- Offers will be dynamically inserted here -->
+            </div>
+            <button id="refresh-offers" class="refresh-offers">
+                <i class="fas fa-sync"></i> Refresh Offers
+            </button>
+        </div>
+    </div>
+
+    <div id="events-overlay" class="events-overlay">
+        <div class="events-container">
+            <h2>Upcoming & Ongoing Events</h2>
+            <button id="close-events" class="close-events">×</button>
+            <div id="events-list" class="events-list">
+                <!-- Events will be dynamically inserted here -->
+            </div>
+            <button id="refresh-events" class="refresh-events">
+                <i class="fas fa-sync"></i> Refresh Events
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="index.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Weather information update
+            function updateWeather() {
+                const weatherInfo = document.getElementById('weather-info');
+                const weatherIcon = weatherInfo.querySelector('img');
+                const weatherText = weatherInfo.querySelector('span');
+                
+                const weather = {
+                    temperature: Math.floor(Math.random() * 15) + 20,
+                    condition: ['sunny', 'cloudy', 'rainy'][Math.floor(Math.random() * 3)]
+                };
+                
+                weatherIcon.src = `https://api.iconify.design/wi:day-${weather.condition}.svg`;
+                weatherIcon.className = `weather-icon ${weather.condition}`;
+                weatherText.textContent = `${weather.temperature}°C`;
+            }
+            
+            updateWeather();
+            setInterval(updateWeather, 600000);
+
+            // Offers functionality
+            const viewOffersButton = document.getElementById('view-offers-button');
+            const offersOverlay = document.getElementById('offers-overlay');
+            const closeOffersButton = document.getElementById('close-offers');
+            const offersList = document.getElementById('offers-list');
+            const refreshOffersButton = document.getElementById('refresh-offers');
+            
+            viewOffersButton.addEventListener('click', () => {
+                offersOverlay.style.display = 'flex';
+                updateOffers();
+            });
+            
+            closeOffersButton.addEventListener('click', () => {
+                offersOverlay.style.display = 'none';
+            });
+            
+            refreshOffersButton.addEventListener('click', updateOffers);
+            
+            function updateOffers() {
+                refreshOffersButton.innerHTML = '<div class="loading"></div>Refreshing...';
+                refreshOffersButton.disabled = true;
+
+                setTimeout(() => {
+                    const offers = [
+                        { store: 'HNM', discount: '20% off on all items', code: 'HNM20' },
+                        { store: 'Lifestyle', discount: 'Buy 1 Get 1 Free', code: 'LIFEBOGO' },
+                        { store: 'Nykaa', discount: '30% off on cosmetics', code: 'BEAUTY30' },
+                        { store: 'Marks & Spencer', discount: '50% off on selected items', code: 'MS50' },
+                        { store: 'Tommy Hilfiger', discount: '25% off on new arrivals', code: 'NEWTOMMY25' },
+                        { store: 'Ethos', discount: '10% off on all watches', code: 'TIMESAVE10' },
+                        { store: 'Zodiac', discount: '40% off on formal wear', code: 'FORMAL40' },
+                        { store: 'Calvin Klein', discount: '15% off storewide', code: 'CK15' },
+                        { store: 'Being Human', discount: 'Flat ₹500 off on ₹2500', code: 'HUMAN500' },
+                        { store: 'Vero Moda', discount: '35% off on dresses', code: 'DRESS35' },
+                        { store: 'Only', discount: '20% off on jeans', code: 'ONLYJEANS20' },
+                        { store: 'Orra', discount: '5% off on diamond jewelry', code: 'SPARKLE5' }
+                    ];
+                    
+                    offersList.innerHTML = '';
+                    offers.forEach(offer => {
+                        const offerItem = document.createElement('div');
+                        offerItem.className = 'offer-item';
+                        offerItem.innerHTML = `
+                            <h3>${offer.store}</h3>
+                            <p>${offer.discount}</p>
+                            <div class="offer-code">${offer.code}</div>
+                            <button class="copy-code">Copy Code</button>
+                        `;
+                        offersList.appendChild(offerItem);
+
+                        const copyButton = offerItem.querySelector('.copy-code');
+                        copyButton.addEventListener('click', () => {
+                            navigator.clipboard.writeText(offer.code).then(() => {
+                                copyButton.textContent = 'Copied!';
+                                setTimeout(() => {
+                                    copyButton.textContent = 'Copy Code';
+                                }, 2000);
+                            });
+                        });
+                    });
+
+                    refreshOffersButton.innerHTML = '<i class="fas fa-sync"></i> Refresh Offers';
+                    refreshOffersButton.disabled = false;
+                }, 1500);
+            }
+            
+            // Events functionality
+            const viewEventsButton = document.getElementById('view-events-button');
+            const eventsOverlay = document.getElementById('events-overlay');
+            const closeEventsButton = document.getElementById('close-events');
+            const eventsList = document.getElementById('events-list');
+            const refreshEventsButton = document.getElementById('refresh-events');
+            
+            viewEventsButton.addEventListener('click', () => {
+                eventsOverlay.style.display = 'flex';
+                updateEvents();
+            });
+            
+            closeEventsButton.addEventListener('click', () => {
+                eventsOverlay.style.display = 'none';
+            });
+            
+            refreshEventsButton.addEventListener('click', updateEvents);
+            
+            function updateEvents() {
+                refreshEventsButton.innerHTML = '<div class="loading"></div>Refreshing...';
+                refreshEventsButton.disabled = true;
+
+                setTimeout(() => {
+                    const events = [
+                        {
+                            title: 'Summer Fashion Show',
+                            date: 'July 15, 2023',
+                            location: 'Central Atrium',
+                            image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
+                            description: 'Experience the latest summer trends with our annual fashion extravaganza!'
+                        },
+                        {
+                            title: 'Kids Fun Day',
+                            date: 'July 20, 2023',
+                            location: 'Play Area',
+                            image: 'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1169&q=80',
+                            description: 'A day full of games, activities, and surprises for children of all ages.'
+                        },
+                        {
+                            title: 'Tech Expo 2023',
+                            date: 'July 25, 2023',
+                            location: 'Electronics Section',
+                            image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1201&q=80',
+                            description: 'Discover the newest gadgets and innovations in technology.'
+                        },
+                        {
+                            title: 'Culinary Workshop',
+                            date: 'August 5, 2023',
+                            location: 'Food Court',
+                            image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
+                            description: 'Learn to cook exotic dishes from renowned chefs in this interactive workshop.'
+                        },
+                        {
+                            title: 'Fitness Bootcamp',
+                            date: 'August 10, 2023',
+                            location: 'Outdoor Plaza',
+                            image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
+                            description: 'Join our high-energy fitness session led by professional trainers.'
+                        },
+                        {
+                            title: 'Art Exhibition',
+                            date: 'August 15-20, 2023',
+                            location: 'Gallery Space',
+                            image: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
+                            description: 'Explore stunning artworks from local and international artists.'
+                        }
+                    ];
+                    
+                    eventsList.innerHTML = '';
+                    events.forEach(event => {
+                        const eventItem = document.createElement('div');
+                        eventItem.className = 'event-item';
+                        eventItem.innerHTML = `
+                            <img src="${event.image}" alt="${event.title}" class="event-image">
+                            <h3>${event.title}</h3>
+                            <p class="event-date">${event.date}</p>
+                            <p class="event-location">${event.location}</p>
+                            <p class="event-description">${event.description}</p>
+                        `;
+                        eventsList.appendChild(eventItem);
+                    });
+
+                    refreshEventsButton.innerHTML = '<i class="fas fa-sync"></i> Refresh Events';
+                    refreshEventsButton.disabled = false;
+                }, 1500);
+            }
+
+            // QR Code functionality
+            const currentLocationSelect = document.getElementById('current-location');
+            const destinationSelect = document.getElementById('destination');
+            const levelSelect = document.getElementById('level-select');
+            const startButton = document.getElementById('start-button');
+            const resetButton = document.getElementById('reset-button');
+            const toggleVoiceNavButton = document.getElementById('toggle-voice-nav');
+            const currentTimeEl = document.getElementById('current-time');
+            const compassImg = document.querySelector('.compass img');
+            const popup = document.getElementById('popup');
+            const closePopupButton = document.getElementById('close-popup');
+            const qrCodeEl = document.getElementById('qr-code');
+
+            let isVoiceNavActive = false;
+            let navigationInterval;
+            let startTime;
+
+            function updateCurrentTime() {
+                const now = new Date();
+                currentTimeEl.textContent = now.toLocaleTimeString();
+            }
+
+            function startNavigation() {
+                const currentLocation = currentLocationSelect.value;
+                const destination = destinationSelect.value;
+                const level = levelSelect.value;
+
+                if (!currentLocation || !destination) {
+                    alert('Please select both current location and destination.');
+                    return;
+                }
+
+                console.log(`Starting navigation from ${currentLocation} to ${destination} on level ${level}`);
+                startTime = new Date();
+
+                navigationInterval = setInterval(() => {
+                    const elapsedTime = Math.floor((new Date() - startTime) / 1000);
+                    const minutes = Math.floor(elapsedTime / 60);
+                    const seconds = elapsedTime % 60;
+
+                    const randomRotation = Math.random() * 360;
+                    compassImg.style.transform = `rotate(${randomRotation}deg)`;
+
+                    if (elapsedTime >= 100) {
+                        clearInterval(navigationInterval);
+                        showDestinationPopup();
+                    }
+                }, 1000);
+
+                generateQRCode(currentLocation, destination, level);
+
+                // Generate and display path steps
+                const path = generateRandomPath(); // Replace this with your actual path generation logic
+                const steps = generatePathSteps(path);
+                displayPathSteps(steps);
+            }
+
+            function resetNavigation() {
+                clearInterval(navigationInterval);
+                currentLocationSelect.value = '';
+                destinationSelect.value = '';
+                levelSelect.value = '1';
+                compassImg.style.transform = 'rotate(0deg)';
+                qrCodeEl.innerHTML = '';
+                qrCodeEl.classList.remove('visible');
+                console.log('Navigation reset');
+            }
+
+            function toggleVoiceNavigation() {
+                isVoiceNavActive = !isVoiceNavActive;
+                toggleVoiceNavButton.style.backgroundColor = isVoiceNavActive ? 'rgba(167, 139, 250, 0.3)' : 'rgba(167, 139, 250, 0.1)';
+                console.log('Voice navigation toggled:', isVoiceNavActive);
+            }
+
+            function showDestinationPopup() {
+                popup.style.display = 'block';
+            }
+
+            function closeDestinationPopup() {
+                popup.style.display = 'none';
+            }
+
+            function generateQRCode(currentLocation, destination, level) {
+                qrCodeEl.innerHTML = '';
+
+                const qrData = `https://capable-rabanadas-950dde.netlify.app/?from=${encodeURIComponent(currentLocationSelect.options[currentLocationSelect.selectedIndex].text)}&to=${encodeURIComponent(destinationSelect.options[destinationSelect.selectedIndex].text)}&level=${encodeURIComponent(levelSelect.options[levelSelect.selectedIndex].text)}`;
+
+                try {
+                    new QRCode(qrCodeEl, {
+                        text: qrData,
+                        width: 128,
+                        height: 128,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    qrCodeEl.classList.add('visible');
+                } catch (error) {
+                    console.error('QR Code generation failed:', error);
+                    qrCodeEl.innerHTML = '<p class="error-message">Failed to generate QR code</p>';
+                }
+            }
+
+            function updateQRCode() {
+                const currentLocation = currentLocationSelect.value;
+                const destination = destinationSelect.value;
+                const level = levelSelect.value;
+
+                if (currentLocation && destination) {
+                    generateQRCode(currentLocation, destination, level);
+                } else {
+                    qrCodeEl.innerHTML = ''; 
+                    qrCodeEl.classList.remove('visible');
+                }
+            }
+
+            function handleQRCodeScan() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const from = urlParams.get('from');
+                const to = urlParams.get('to');
+                const level = urlParams.get('level');
+
+                if (from && to && level) {
+                    // Find and select the correct options
+                    selectOptionByText(currentLocationSelect, from);
+                    selectOptionByText(destinationSelect, to);
+                    selectOptionByText(levelSelect, level);
+
+                    // Start navigation automatically
+                    startNavigation();
+                }
+            }
+
+            function selectOptionByText(selectElement, text) {
+                for (let i = 0; i < selectElement.options.length; i++) {
+                    if (selectElement.options[i].text === text) {
+                        selectElement.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            // Call this function when the page loads
+            handleQRCodeScan();
+
+            startButton.addEventListener('click', startNavigation);
+            resetButton.addEventListener('click', resetNavigation);
+            toggleVoiceNavButton.addEventListener('click', toggleVoiceNavigation);
+            closePopupButton.addEventListener('click', closeDestinationPopup);
+
+            currentLocationSelect.addEventListener('change', updateQRCode);
+            destinationSelect.addEventListener('change', updateQRCode);
+            levelSelect.addEventListener('change', updateQRCode);
+
+            setInterval(updateCurrentTime, 1000);
+            updateCurrentTime();
+        });
+
+        function generatePathSteps(path) {
+            const steps = [];
+            for (let i = 1; i < path.length; i++) {
+                const prevPoint = path[i - 1];
+                const currentPoint = path[i];
+                const direction = new THREE.Vector3().subVectors(currentPoint, prevPoint);
+                const distance = direction.length();
+                const normalizedDirection = direction.normalize();
+
+                let step = '';
+                if (Math.abs(normalizedDirection.x) > Math.abs(normalizedDirection.z)) {
+                    step = normalizedDirection.x > 0 ? 'Go right' : 'Go left';
+                } else {
+                    step = normalizedDirection.z > 0 ? 'Go forward' : 'Go backward';
+                }
+                step += ` for ${distance.toFixed(2)} meters`;
+                steps.push(step);
+            }
+            return steps;
+        }
+
+        function displayPathSteps(steps) {
+            const pathStepsElement = document.getElementById('path-steps');
+            pathStepsElement.innerHTML = '';
+            steps.forEach((step, index) => {
+                const stepElement = document.createElement('p');
+                stepElement.textContent = `${index + 1}. ${step}`;
+                pathStepsElement.appendChild(stepElement);
+            });
+        }
+
+        // Modify the startNavigation function to generate and display path steps
+        function startNavigation() {
+            const currentLocation = currentLocationSelect.value;
+            const destination = destinationSelect.value;
+            const level = levelSelect.value;
+
+            if (!currentLocation || !destination) {
+                alert('Please select both current location and destination.');
+                return;
+            }
+
+            console.log(`Starting navigation from ${currentLocation} to ${destination} on level ${level}`);
+            startTime = new Date();
+
+            navigationInterval = setInterval(() => {
+                const elapsedTime = Math.floor((new Date() - startTime) / 1000);
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+
+                const randomRotation = Math.random() * 360;
+                compassImg.style.transform = `rotate(${randomRotation}deg)`;
+
+                if (elapsedTime >= 100) {
+                    clearInterval(navigationInterval);
+                    showDestinationPopup();
+                }
+            }, 1000);
+
+            generateQRCode(currentLocation, destination, level);
+
+            // Generate and display path steps
+            const path = generateRandomPath(); // Replace this with your actual path generation logic
+            const steps = generatePathSteps(path);
+            displayPathSteps(steps);
+        }
+
+        // Add this function to generate a random path (replace with your actual path generation logic)
+        function generateRandomPath() {
+            const path = [];
+            const numPoints = 5;
+            for (let i = 0; i < numPoints; i++) {
+                path.push(new THREE.Vector3(
+                    Math.random() * 20 - 10,
+                    0,
+                    Math.random() * 20 - 10
+                ));
+            }
+            return path;
+        }
+    </script>
+</body>
 </html>
+
